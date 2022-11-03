@@ -1,6 +1,7 @@
 ﻿using Hotel_HotelAPI.Data;
 using Hotel_HotelAPI.Models;
 using Hotel_HotelAPI.Models.Dto;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 namespace Hotel_HotelAPI.Controllers
 {
@@ -98,6 +99,30 @@ namespace Hotel_HotelAPI.Controllers
             hotel.Sqft = hotelDTO.Sqft;
             hotel.Occupancy = hotelDTO.Occupancy;
 
+            return NoContent();
+        }
+
+        [HttpPatch("{id:int}", Name = "UpdatePartialHotel")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult UpdatePartialhotel(int id, JsonPatchDocument<HotelDTO> patchDTO) { 
+            if(patchDTO == null || id== 0)
+            {
+                return BadRequest();
+            }
+            var hotel = HotelStore.hotelList.FirstOrDefault(u=>u.Id == id);
+
+            if(hotel== null)
+            {
+                return BadRequest();
+            }
+
+            patchDTO.ApplyTo(hotel, ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             return NoContent();
         }
     }
