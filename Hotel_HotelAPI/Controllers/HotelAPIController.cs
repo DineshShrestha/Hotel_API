@@ -9,15 +9,24 @@ namespace Hotel_HotelAPI.Controllers
     public class HotelAPIController : ControllerBase
     {
         [HttpGet]
-        public IEnumerable<HotelDTO> GetHotels()
+        public ActionResult<IEnumerable<HotelDTO>> GetHotels()
         {
-            return HotelStore.hotelList;
+            return Ok(HotelStore.hotelList);
         }
 
         [HttpGet("{id:int}")]
-        public HotelDTO GetHotel(int id)
+        public ActionResult<HotelDTO> GetHotel(int id)
         {
-            return HotelStore.hotelList.FirstOrDefault(u=> u.Id == id);
+            if(id==0)
+            {
+                return BadRequest();
+            }
+            var hotel =HotelStore.hotelList.FirstOrDefault(u=> u.Id == id);
+            if (hotel == null)
+            {
+                return NotFound();
+            }
+            return Ok(hotel);
         }
     }
 }
