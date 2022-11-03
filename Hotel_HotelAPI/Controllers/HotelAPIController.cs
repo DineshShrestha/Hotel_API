@@ -13,5 +13,11 @@ namespace Hotel_HotelAPI.Controllers
         {
             return HotelStore.hotelList;
         }
+
+        [HttpGet("{id:int}")]
+        public HotelDTO GetHotel(int id)
+        {
+            return HotelStore.hotelList.FirstOrDefault(u=> u.Id == id);
+        }
     }
 }
