@@ -9,10 +9,17 @@ namespace Hotel_HotelAPI.Controllers
     [ApiController]
     public class HotelAPIController : ControllerBase
     {
+        public ILogger<HotelAPIController> _logger { get; }
+
+        public HotelAPIController(ILogger<HotelAPIController> logger)
+        {
+            _logger = logger;
+        }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<HotelDTO>> GetHotels()
         {
+            _logger.LogInformation("Getting all hotels");
             return Ok(HotelStore.hotelList);
         }
 
@@ -24,6 +31,7 @@ namespace Hotel_HotelAPI.Controllers
         {
             if(id==0)
             {
+                _logger.LogError("Get hotels error with ID" + id);
                 return BadRequest();
             }
             var hotel =HotelStore.hotelList.FirstOrDefault(u=> u.Id == id);
