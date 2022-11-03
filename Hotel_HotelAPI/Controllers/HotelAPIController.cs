@@ -32,5 +32,25 @@ namespace Hotel_HotelAPI.Controllers
             }
             return Ok(hotel);
         }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<HotelDTO> CreateHotel([FromBody]HotelDTO hotelDTO) { 
+            if(hotelDTO == null)
+            {
+                return BadRequest();
+            }
+            if(hotelDTO.Id > 0)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            hotelDTO.Id = HotelStore.hotelList.OrderByDescending(u=>u.Id).FirstOrDefault().Id + 1;
+            HotelStore.hotelList.Add(hotelDTO);
+
+            return Ok(hotelDTO);
+        }
     }
 }
