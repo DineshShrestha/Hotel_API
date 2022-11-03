@@ -64,7 +64,7 @@ namespace Hotel_HotelAPI.Controllers
             return CreatedAtRoute("GetHotel",new { id = hotelDTO.Id },  hotelDTO);
         }
 
-        [HttpDelete("{id:int}", Name = "GetHotel")]
+        [HttpDelete("{id:int}", Name = "DeleteHotel")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -81,6 +81,23 @@ namespace Hotel_HotelAPI.Controllers
             }
 
             HotelStore.hotelList.Remove(hotel);
+            return NoContent();
+        }
+
+        [HttpPut("{id:int}", Name = "UpdateHotel")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult Updatehotel(int id, [FromBody]HotelDTO hotelDTO)
+        {
+            if (hotelDTO == null || id!=hotelDTO.Id)
+            {
+                return BadRequest();
+            }
+            var hotel = HotelStore.hotelList.FirstOrDefault(u => u.Id == id);
+            hotel.Name = hotelDTO.Name;
+            hotel.Sqft = hotelDTO.Sqft;
+            hotel.Occupancy = hotelDTO.Occupancy;
+
             return NoContent();
         }
     }

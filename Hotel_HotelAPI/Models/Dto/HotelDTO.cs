@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.ComponentModel.DataAnnotations;
 
 namespace Hotel_HotelAPI.Models.Dto
 {
@@ -8,5 +9,9 @@ namespace Hotel_HotelAPI.Models.Dto
         [Required]
         [MaxLength(30)]
         public string Name { get; set; }
+
+        public int Occupancy { get; set; }
+
+        public int Sqft { get; set; }
     }
 }
