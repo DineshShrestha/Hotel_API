@@ -15,7 +15,7 @@ namespace Hotel_HotelAPI.Controllers
             return Ok(HotelStore.hotelList);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}", Name = "GetHotel")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -34,7 +34,7 @@ namespace Hotel_HotelAPI.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<HotelDTO> CreateHotel([FromBody]HotelDTO hotelDTO) { 
@@ -50,7 +50,7 @@ namespace Hotel_HotelAPI.Controllers
             hotelDTO.Id = HotelStore.hotelList.OrderByDescending(u=>u.Id).FirstOrDefault().Id + 1;
             HotelStore.hotelList.Add(hotelDTO);
 
-            return Ok(hotelDTO);
+            return CreatedAtRoute("GetHotel",new { id = hotelDTO.Id },  hotelDTO);
         }
     }
 }
