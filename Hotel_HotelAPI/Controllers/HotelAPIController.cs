@@ -37,7 +37,18 @@ namespace Hotel_HotelAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<HotelDTO> CreateHotel([FromBody]HotelDTO hotelDTO) { 
+        public ActionResult<HotelDTO> CreateHotel([FromBody]HotelDTO hotelDTO) {
+
+            /*if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }*/
+
+            if(HotelStore.hotelList.FirstOrDefault(u=> u.Name.ToLower() == hotelDTO.Name.ToLower()) != null) {
+                ModelState.AddModelError("CustomError", "Villa already exists!");
+                return BadRequest(ModelState);
+            }
+
             if(hotelDTO == null)
             {
                 return BadRequest();
