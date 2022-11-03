@@ -1,4 +1,5 @@
 ﻿using Hotel_HotelAPI.Models;
+using Hotel_HotelAPI.Models.Dto;
 using Microsoft.AspNetCore.Mvc;
 namespace Hotel_HotelAPI.Controllers
 {
@@ -7,12 +8,12 @@ namespace Hotel_HotelAPI.Controllers
     public class HotelAPIController : ControllerBase
     {
         [HttpGet]
-        public IEnumerable<Hotel> GetHotels()
+        public IEnumerable<HotelDTO> GetHotels()
         {
-            return new List<Hotel>
+            return new List<HotelDTO>
             {
-                new Hotel{Id=1, Name="Pool View" },
-                new Hotel{Id=2, Name="Beach View"}
+                new HotelDTO{Id=1, Name="Pool View" },
+                new HotelDTO{Id=2, Name="Beach View"}
             };
         }
     }
