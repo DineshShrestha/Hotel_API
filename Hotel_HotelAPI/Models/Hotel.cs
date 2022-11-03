@@ -1,4 +1,6 @@
-﻿namespace Hotel_HotelAPI.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Hotel_HotelAPI.Models
 {
     public class Hotel
     {
@@ -6,6 +8,15 @@
 
         public string Name { get; set; }
 
+        public string Details { get; set; }
+        
+        public double Rate { get; set; }
+        public int Occupancy { get; set; }
+
+        public string ImageUrl { get; set; }
+        public string Amenity { get; set; }
         public DateTime CreatedDate { get; set; }
+
+        public DateTime UpdatedDate { get; set; }
     }
 }
