@@ -3,6 +3,8 @@ using Hotel_HotelAPI.Models;
 using Hotel_HotelAPI.Models.Dto;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
 namespace Hotel_HotelAPI.Controllers
 {
     [Route("api/HotelAPI")]
@@ -140,7 +142,7 @@ namespace Hotel_HotelAPI.Controllers
             {
                 return BadRequest();
             }
-            var hotel = _db.Hotels.FirstOrDefault(u=>u.Id == id);
+            var hotel = _db.Hotels.AsNoTracking().FirstOrDefault(u=>u.Id == id);
 
            
             HotelDTO hotelDTO = new()
