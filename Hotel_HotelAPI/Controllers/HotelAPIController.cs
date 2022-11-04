@@ -1,4 +1,5 @@
 ﻿using Hotel_HotelAPI.Data;
+using Hotel_HotelAPI.Models;
 using Hotel_HotelAPI.Models.Dto;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -9,17 +10,18 @@ namespace Hotel_HotelAPI.Controllers
     public class HotelAPIController : ControllerBase
     {
 
-       
+        private readonly ApplicationDbContext _db;
         
-        public HotelAPIController()
+        
+        public HotelAPIController(ApplicationDbContext db)
         {
-          
+          _db=db;
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<HotelDTO>> GetHotels()
         {
-            return Ok(HotelStore.hotelList);
+            return Ok(_db.Hotels);
         }
 
         [HttpGet("{id:int}", Name = "GetHotel")]
@@ -32,7 +34,7 @@ namespace Hotel_HotelAPI.Controllers
             {
                 return BadRequest();
             }
-            var hotel =HotelStore.hotelList.FirstOrDefault(u=> u.Id == id);
+            var hotel =_db.Hotels.FirstOrDefault(u=> u.Id == id);
             if (hotel == null)
             {
                 return NotFound();
@@ -51,7 +53,7 @@ namespace Hotel_HotelAPI.Controllers
                 return BadRequest();
             }*/
 
-            if(HotelStore.hotelList.FirstOrDefault(u=> u.Name.ToLower() == hotelDTO.Name.ToLower()) != null) {
+            if(_db.Hotels.FirstOrDefault(u=> u.Name.ToLower() == hotelDTO.Name.ToLower()) != null) {
                 ModelState.AddModelError("CustomError", "Villa already exists!");
                 return BadRequest(ModelState);
             }
@@ -64,10 +66,19 @@ namespace Hotel_HotelAPI.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-
-            hotelDTO.Id = HotelStore.hotelList.OrderByDescending(u=>u.Id).FirstOrDefault().Id + 1;
-            HotelStore.hotelList.Add(hotelDTO);
-
+            Hotel model = new()
+            {
+                Amenity = hotelDTO.Amenity,
+                Details = hotelDTO.Details,
+                Id = hotelDTO.Id,
+                ImageUrl = hotelDTO.ImageUrl,
+                Name = hotelDTO.Name,
+                Occupancy = hotelDTO.Occupancy,
+                Rate = hotelDTO.Rate,
+                Sqft = hotelDTO.Sqft,
+            };
+            _db.Hotels.Add(model);
+            _db.SaveChanges();
             return CreatedAtRoute("GetHotel",new { id = hotelDTO.Id },  hotelDTO);
         }
 
@@ -81,13 +92,14 @@ namespace Hotel_HotelAPI.Controllers
             {
                 return BadRequest();    
             }
-            var hotel = HotelStore.hotelList.FirstOrDefault(u => u.Id == id);  
+            var hotel = _db.Hotels.FirstOrDefault(u => u.Id == id);  
             if(hotel == null)
             {
                 return NotFound();
             }
 
-            HotelStore.hotelList.Remove(hotel);
+            _db.Hotels.Remove(hotel);
+            _db.SaveChanges();
             return NoContent();
         }
 
@@ -100,11 +112,23 @@ namespace Hotel_HotelAPI.Controllers
             {
                 return BadRequest();
             }
-            var hotel = HotelStore.hotelList.FirstOrDefault(u => u.Id == id);
-            hotel.Name = hotelDTO.Name;
-            hotel.Sqft = hotelDTO.Sqft;
-            hotel.Occupancy = hotelDTO.Occupancy;
-
+            //var hotel = HotelStore.hotelList.FirstOrDefault(u => u.Id == id);
+            //hotel.Name = hotelDTO.Name;
+            //hotel.Sqft = hotelDTO.Sqft;
+            //hotel.Occupancy = hotelDTO.Occupancy;
+            Hotel model = new()
+            {
+                Amenity = hotelDTO.Amenity,
+                Details = hotelDTO.Details,
+                Id = hotelDTO.Id,
+                ImageUrl = hotelDTO.ImageUrl,
+                Name = hotelDTO.Name,
+                Occupancy = hotelDTO.Occupancy,
+                Rate = hotelDTO.Rate,
+                Sqft = hotelDTO.Sqft,
+            };
+            _db.Hotels.Update(model);
+            _db.SaveChanges();
             return NoContent();
         }
 
@@ -116,20 +140,44 @@ namespace Hotel_HotelAPI.Controllers
             {
                 return BadRequest();
             }
-            var hotel = HotelStore.hotelList.FirstOrDefault(u=>u.Id == id);
+            var hotel = _db.Hotels.FirstOrDefault(u=>u.Id == id);
 
-            if(hotel== null)
+           
+            HotelDTO hotelDTO = new()
+            {
+                Amenity = hotel.Amenity,
+                Details = hotel.Details,
+                Id = hotel.Id,
+                ImageUrl = hotel.ImageUrl,
+                Name = hotel.Name,
+                Occupancy = hotel.Occupancy,
+                Rate = hotel.Rate,
+                Sqft = hotel.Sqft,
+            };
+
+            if (hotel == null)
             {
                 return BadRequest();
             }
+            patchDTO.ApplyTo(hotelDTO, ModelState);
 
-            patchDTO.ApplyTo(hotel, ModelState);
-
+            Hotel model = new()
+            {
+                Amenity = hotelDTO.Amenity,
+                Details = hotelDTO.Details,
+                Id = hotelDTO.Id,
+                ImageUrl = hotelDTO.ImageUrl,
+                Name = hotelDTO.Name,
+                Occupancy = hotelDTO.Occupancy,
+                Rate = hotelDTO.Rate,
+                Sqft = hotelDTO.Sqft,
+            };
+            _db.Hotels.Update(model);
+            _db.SaveChanges();
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
             return NoContent();
-        }
-    }
+        }    }
 }
