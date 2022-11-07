@@ -48,7 +48,7 @@ namespace Hotel_HotelAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<HotelDTO> CreateHotel([FromBody]HotelDTO hotelDTO) {
+        public ActionResult<HotelDTO> CreateHotel([FromBody]HotelCreateDTO hotelDTO) {
 
             /*if (!ModelState.IsValid)
             {
@@ -64,15 +64,14 @@ namespace Hotel_HotelAPI.Controllers
             {
                 return BadRequest();
             }
-            if(hotelDTO.Id > 0)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            //if(hotelDTO.Id > 0)
+            //{
+            //    return StatusCode(StatusCodes.Status500InternalServerError);
+            //}
             Hotel model = new()
             {
                 Amenity = hotelDTO.Amenity,
                 Details = hotelDTO.Details,
-                Id = hotelDTO.Id,
                 ImageUrl = hotelDTO.ImageUrl,
                 Name = hotelDTO.Name,
                 Occupancy = hotelDTO.Occupancy,
@@ -81,7 +80,7 @@ namespace Hotel_HotelAPI.Controllers
             };
             _db.Hotels.Add(model);
             _db.SaveChanges();
-            return CreatedAtRoute("GetHotel",new { id = hotelDTO.Id },  hotelDTO);
+            return CreatedAtRoute("GetHotel",new { id = model.Id },  model);
         }
 
         [HttpDelete("{id:int}", Name = "DeleteHotel")]
@@ -108,7 +107,7 @@ namespace Hotel_HotelAPI.Controllers
         [HttpPut("{id:int}", Name = "UpdateHotel")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Updatehotel(int id, [FromBody]HotelDTO hotelDTO)
+        public IActionResult Updatehotel(int id, [FromBody]HotelUpdateDTO hotelDTO)
         {
             if (hotelDTO == null || id!=hotelDTO.Id)
             {
@@ -137,7 +136,7 @@ namespace Hotel_HotelAPI.Controllers
         [HttpPatch("{id:int}", Name = "UpdatePartialHotel")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdatePartialhotel(int id, JsonPatchDocument<HotelDTO> patchDTO) { 
+        public IActionResult UpdatePartialhotel(int id, JsonPatchDocument<HotelUpdateDTO> patchDTO) { 
             if(patchDTO == null || id== 0)
             {
                 return BadRequest();
@@ -145,7 +144,7 @@ namespace Hotel_HotelAPI.Controllers
             var hotel = _db.Hotels.AsNoTracking().FirstOrDefault(u=>u.Id == id);
 
            
-            HotelDTO hotelDTO = new()
+            HotelUpdateDTO hotelDTO = new()
             {
                 Amenity = hotel.Amenity,
                 Details = hotel.Details,
