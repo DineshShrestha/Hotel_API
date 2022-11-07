@@ -2,6 +2,7 @@
 
 //using Hotel_HotelAPI.Logging;
 
+using Hotel_HotelAPI;
 using Hotel_HotelAPI.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers(option=> {
     //option.ReturnHttpNotAcceptable = true;
     }).AddNewtonsoftJson().AddXmlDataContractSerializerFormatters();
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<ApplicationDbContext>(option =>
 {
