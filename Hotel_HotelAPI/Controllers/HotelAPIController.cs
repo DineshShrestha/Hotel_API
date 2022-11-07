@@ -21,22 +21,22 @@ namespace Hotel_HotelAPI.Controllers
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<HotelDTO>> GetHotels()
+        public async Task<ActionResult<IEnumerable<HotelDTO>>> GetHotels()
         {
-            return Ok(_db.Hotels);
+            return Ok(await _db.Hotels.ToListAsync());
         }
 
         [HttpGet("{id:int}", Name = "GetHotel")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<HotelDTO> GetHotel(int id)
+        public async  Task<ActionResult<HotelDTO>> GetHotel(int id)
         {
             if(id==0)
             {
                 return BadRequest();
             }
-            var hotel =_db.Hotels.FirstOrDefault(u=> u.Id == id);
+            var hotel =await _db.Hotels.FirstOrDefaultAsync(u=> u.Id == id);
             if (hotel == null)
             {
                 return NotFound();
@@ -48,14 +48,14 @@ namespace Hotel_HotelAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<HotelDTO> CreateHotel([FromBody]HotelCreateDTO hotelDTO) {
+        public async Task<ActionResult<HotelDTO>> CreateHotel([FromBody]HotelCreateDTO hotelDTO) {
 
             /*if (!ModelState.IsValid)
             {
                 return BadRequest();
             }*/
 
-            if(_db.Hotels.FirstOrDefault(u=> u.Name.ToLower() == hotelDTO.Name.ToLower()) != null) {
+            if(await _db.Hotels.FirstOrDefaultAsync(u=> u.Name.ToLower() == hotelDTO.Name.ToLower()) != null) {
                 ModelState.AddModelError("CustomError", "Villa already exists!");
                 return BadRequest(ModelState);
             }
@@ -78,8 +78,8 @@ namespace Hotel_HotelAPI.Controllers
                 Rate = hotelDTO.Rate,
                 Sqft = hotelDTO.Sqft,
             };
-            _db.Hotels.Add(model);
-            _db.SaveChanges();
+            await _db.Hotels.AddAsync(model);
+            await _db.SaveChangesAsync();
             return CreatedAtRoute("GetHotel",new { id = model.Id },  model);
         }
 
@@ -87,27 +87,27 @@ namespace Hotel_HotelAPI.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult DeleteHotel(int id)
+        public async Task<IActionResult> DeleteHotel(int id)
         {
             if (id == 0)
             {
                 return BadRequest();    
             }
-            var hotel = _db.Hotels.FirstOrDefault(u => u.Id == id);  
+            var hotel = await _db.Hotels.FirstOrDefaultAsync(u => u.Id == id);  
             if(hotel == null)
             {
                 return NotFound();
             }
 
             _db.Hotels.Remove(hotel);
-            _db.SaveChanges();
+           await _db.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpPut("{id:int}", Name = "UpdateHotel")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Updatehotel(int id, [FromBody]HotelUpdateDTO hotelDTO)
+        public async Task<IActionResult> Updatehotel(int id, [FromBody]HotelUpdateDTO hotelDTO)
         {
             if (hotelDTO == null || id!=hotelDTO.Id)
             {
@@ -129,19 +129,19 @@ namespace Hotel_HotelAPI.Controllers
                 Sqft = hotelDTO.Sqft,
             };
             _db.Hotels.Update(model);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpPatch("{id:int}", Name = "UpdatePartialHotel")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdatePartialhotel(int id, JsonPatchDocument<HotelUpdateDTO> patchDTO) { 
+        public async Task<IActionResult> UpdatePartialhotel(int id, JsonPatchDocument<HotelUpdateDTO> patchDTO) { 
             if(patchDTO == null || id== 0)
             {
                 return BadRequest();
             }
-            var hotel = _db.Hotels.AsNoTracking().FirstOrDefault(u=>u.Id == id);
+            var hotel = await _db.Hotels.AsNoTracking().FirstOrDefaultAsync(u=>u.Id == id);
 
            
             HotelUpdateDTO hotelDTO = new()
@@ -174,7 +174,7 @@ namespace Hotel_HotelAPI.Controllers
                 Sqft = hotelDTO.Sqft,
             };
             _db.Hotels.Update(model);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
             if (!ModelState.IsValid)
             {
                 return BadRequest();
