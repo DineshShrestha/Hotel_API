@@ -1,6 +1,8 @@
-﻿using Hotel_HotelAPI.Data;
+﻿using AutoMapper;
+using Hotel_HotelAPI.Data;
 using Hotel_HotelAPI.Models;
 using Hotel_HotelAPI.Models.Dto;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,17 +15,19 @@ namespace Hotel_HotelAPI.Controllers
     {
 
         private readonly ApplicationDbContext _db;
-        
-        
-        public HotelAPIController(ApplicationDbContext db)
+
+        private readonly IMapper _mapper;
+        public HotelAPIController(ApplicationDbContext db, IMapper mapper)
         {
           _db=db;
+            _mapper=mapper;
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<HotelDTO>>> GetHotels()
         {
-            return Ok(await _db.Hotels.ToListAsync());
+            IEnumerable<Hotel> hotelList = await _db.Hotels.ToListAsync();
+            return Ok(_mapper.Map<List<HotelDTO>>(hotelList));
         }
 
         [HttpGet("{id:int}", Name = "GetHotel")]
@@ -41,43 +45,29 @@ namespace Hotel_HotelAPI.Controllers
             {
                 return NotFound();
             }
-            return Ok(hotel);
+            return Ok(_mapper.Map<HotelDTO>(hotel));
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<HotelDTO>> CreateHotel([FromBody]HotelCreateDTO hotelDTO) {
+        public async Task<ActionResult<HotelDTO>> CreateHotel([FromBody]HotelCreateDTO createDTO) {
 
-            /*if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }*/
+    
 
-            if(await _db.Hotels.FirstOrDefaultAsync(u=> u.Name.ToLower() == hotelDTO.Name.ToLower()) != null) {
+            if(await _db.Hotels.FirstOrDefaultAsync(u=> u.Name.ToLower() == createDTO.Name.ToLower()) != null) {
                 ModelState.AddModelError("CustomError", "Villa already exists!");
                 return BadRequest(ModelState);
             }
 
-            if(hotelDTO == null)
+            if(createDTO == null)
             {
-                return BadRequest();
+                return BadRequest(createDTO);
             }
-            //if(hotelDTO.Id > 0)
-            //{
-            //    return StatusCode(StatusCodes.Status500InternalServerError);
-            //}
-            Hotel model = new()
-            {
-                Amenity = hotelDTO.Amenity,
-                Details = hotelDTO.Details,
-                ImageUrl = hotelDTO.ImageUrl,
-                Name = hotelDTO.Name,
-                Occupancy = hotelDTO.Occupancy,
-                Rate = hotelDTO.Rate,
-                Sqft = hotelDTO.Sqft,
-            };
+
+            Hotel model = _mapper.Map<Hotel>(createDTO);
+
             await _db.Hotels.AddAsync(model);
             await _db.SaveChangesAsync();
             return CreatedAtRoute("GetHotel",new { id = model.Id },  model);
@@ -107,27 +97,13 @@ namespace Hotel_HotelAPI.Controllers
         [HttpPut("{id:int}", Name = "UpdateHotel")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Updatehotel(int id, [FromBody]HotelUpdateDTO hotelDTO)
+        public async Task<IActionResult> Updatehotel(int id, [FromBody]HotelUpdateDTO updateDTO)
         {
-            if (hotelDTO == null || id!=hotelDTO.Id)
+            if (updateDTO == null || id!= updateDTO.Id)
             {
                 return BadRequest();
             }
-            //var hotel = HotelStore.hotelList.FirstOrDefault(u => u.Id == id);
-            //hotel.Name = hotelDTO.Name;
-            //hotel.Sqft = hotelDTO.Sqft;
-            //hotel.Occupancy = hotelDTO.Occupancy;
-            Hotel model = new()
-            {
-                Amenity = hotelDTO.Amenity,
-                Details = hotelDTO.Details,
-                Id = hotelDTO.Id,
-                ImageUrl = hotelDTO.ImageUrl,
-                Name = hotelDTO.Name,
-                Occupancy = hotelDTO.Occupancy,
-                Rate = hotelDTO.Rate,
-                Sqft = hotelDTO.Sqft,
-            };
+            Hotel model = _mapper.Map<Hotel>(updateDTO);
             _db.Hotels.Update(model);
             await _db.SaveChangesAsync();
             return NoContent();
@@ -143,36 +119,14 @@ namespace Hotel_HotelAPI.Controllers
             }
             var hotel = await _db.Hotels.AsNoTracking().FirstOrDefaultAsync(u=>u.Id == id);
 
-           
-            HotelUpdateDTO hotelDTO = new()
-            {
-                Amenity = hotel.Amenity,
-                Details = hotel.Details,
-                Id = hotel.Id,
-                ImageUrl = hotel.ImageUrl,
-                Name = hotel.Name,
-                Occupancy = hotel.Occupancy,
-                Rate = hotel.Rate,
-                Sqft = hotel.Sqft,
-            };
 
+            HotelUpdateDTO hotelDTO = _mapper.Map<HotelUpdateDTO>(hotel);
             if (hotel == null)
             {
                 return BadRequest();
             }
             patchDTO.ApplyTo(hotelDTO, ModelState);
-
-            Hotel model = new()
-            {
-                Amenity = hotelDTO.Amenity,
-                Details = hotelDTO.Details,
-                Id = hotelDTO.Id,
-                ImageUrl = hotelDTO.ImageUrl,
-                Name = hotelDTO.Name,
-                Occupancy = hotelDTO.Occupancy,
-                Rate = hotelDTO.Rate,
-                Sqft = hotelDTO.Sqft,
-            };
+            Hotel model = _mapper.Map<Hotel>(hotelDTO);
             _db.Hotels.Update(model);
             await _db.SaveChangesAsync();
             if (!ModelState.IsValid)
