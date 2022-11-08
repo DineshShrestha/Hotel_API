@@ -6,61 +6,21 @@ using System.Linq.Expressions;
 
 namespace Hotel_HotelAPI.Repository
 {
-    public class HotelRepository : IHotelRepository
+    public class HotelRepository : Repository<Hotel>, IHotelRepository
     {
         private readonly ApplicationDbContext _db;
 
-        public HotelRepository(ApplicationDbContext db)
+        public HotelRepository(ApplicationDbContext db): base(db) 
         {
             _db = db;
         }
-
-        public async Task CreateAsync(Hotel entity)
+       
+        public async Task<Hotel> UpdateAsync(Hotel entity)
         {
-           await _db.Hotels.AddAsync(entity);
-           await SaveAsync();
-        }
-
-        public async Task<Hotel> GetAsync(Expression<Func<Hotel, bool>> filter = null, bool tracked = true)
-        {
-            IQueryable<Hotel> query = _db.Hotels;
-            if (!tracked)
-            {
-                query = query.AsNoTracking();
-            }
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
-            return await query.FirstOrDefaultAsync();
-        }
-
-        public async Task<List<Hotel>> GetAllAsync(Expression<Func<Hotel, bool>> filter = null)
-        {
-            IQueryable<Hotel> query = _db.Hotels;
-            if(filter != null)
-            {
-                query = query.Where(filter);
-            }
-            return await query.ToListAsync();
-        }
-
-        public async Task RemoveAsync(Hotel entity)
-        {
-             _db.Hotels.Remove(entity);
-            await SaveAsync();
-            
-        }
-
-        public async Task SaveAsync()
-        {
-            await _db.SaveChangesAsync();
-        }
-
-        public async Task UpdateAsync(Hotel entity)
-        {
+            entity.UpdatedDate = DateTime.Now;
             _db.Hotels.Update(entity);
             await _db.SaveChangesAsync();
+            return entity;
         }
 
     }
