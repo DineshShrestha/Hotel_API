@@ -2,6 +2,7 @@
 using Hotel_HotelAPI.Data;
 using Hotel_HotelAPI.Models;
 using Hotel_HotelAPI.Models.Dto;
+using Hotel_HotelAPI.Repository.IRepository;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -11,22 +12,22 @@ namespace Hotel_HotelAPI.Controllers
 {
     [Route("api/HotelAPI")]
     [ApiController]
-    public class HotelAPIController : ControllerBase
+    public class HotelAPIController : ControllerBase 
     {
 
-        private readonly ApplicationDbContext _db;
+        private readonly IHotelRepository _dbHotel;
 
         private readonly IMapper _mapper;
-        public HotelAPIController(ApplicationDbContext db, IMapper mapper)
+        public HotelAPIController(IHotelRepository dbHotel, IMapper mapper)
         {
-          _db=db;
+          _dbHotel=dbHotel;
             _mapper=mapper;
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<HotelDTO>>> GetHotels()
         {
-            IEnumerable<Hotel> hotelList = await _db.Hotels.ToListAsync();
+            IEnumerable<Hotel> hotelList = await _dbHotel.GetAllAsync();
             return Ok(_mapper.Map<List<HotelDTO>>(hotelList));
         }
 
@@ -40,7 +41,7 @@ namespace Hotel_HotelAPI.Controllers
             {
                 return BadRequest();
             }
-            var hotel =await _db.Hotels.FirstOrDefaultAsync(u=> u.Id == id);
+            var hotel =await _dbHotel.GetAsync(u=> u.Id == id);
             if (hotel == null)
             {
                 return NotFound();
@@ -56,7 +57,7 @@ namespace Hotel_HotelAPI.Controllers
 
     
 
-            if(await _db.Hotels.FirstOrDefaultAsync(u=> u.Name.ToLower() == createDTO.Name.ToLower()) != null) {
+            if(await _dbHotel.GetAsync(u=> u.Name.ToLower() == createDTO.Name.ToLower()) != null) {
                 ModelState.AddModelError("CustomError", "Villa already exists!");
                 return BadRequest(ModelState);
             }
@@ -68,8 +69,7 @@ namespace Hotel_HotelAPI.Controllers
 
             Hotel model = _mapper.Map<Hotel>(createDTO);
 
-            await _db.Hotels.AddAsync(model);
-            await _db.SaveChangesAsync();
+            await _dbHotel.CreateAsync(model);    
             return CreatedAtRoute("GetHotel",new { id = model.Id },  model);
         }
 
@@ -83,14 +83,13 @@ namespace Hotel_HotelAPI.Controllers
             {
                 return BadRequest();    
             }
-            var hotel = await _db.Hotels.FirstOrDefaultAsync(u => u.Id == id);  
+            var hotel = await _dbHotel.GetAsync(u => u.Id == id);  
             if(hotel == null)
             {
                 return NotFound();
             }
 
-            _db.Hotels.Remove(hotel);
-           await _db.SaveChangesAsync();
+            await _dbHotel.RemoveAsync(hotel);
             return NoContent();
         }
 
@@ -104,8 +103,8 @@ namespace Hotel_HotelAPI.Controllers
                 return BadRequest();
             }
             Hotel model = _mapper.Map<Hotel>(updateDTO);
-            _db.Hotels.Update(model);
-            await _db.SaveChangesAsync();
+            await _dbHotel.UpdateAsync(model);
+         
             return NoContent();
         }
 
@@ -117,7 +116,7 @@ namespace Hotel_HotelAPI.Controllers
             {
                 return BadRequest();
             }
-            var hotel = await _db.Hotels.AsNoTracking().FirstOrDefaultAsync(u=>u.Id == id);
+            var hotel = await _dbHotel.GetAsync(u=>u.Id == id, tracked:false);
 
 
             HotelUpdateDTO hotelDTO = _mapper.Map<HotelUpdateDTO>(hotel);
@@ -127,8 +126,7 @@ namespace Hotel_HotelAPI.Controllers
             }
             patchDTO.ApplyTo(hotelDTO, ModelState);
             Hotel model = _mapper.Map<Hotel>(hotelDTO);
-            _db.Hotels.Update(model);
-            await _db.SaveChangesAsync();
+            await _dbHotel.UpdateAsync(model);
             if (!ModelState.IsValid)
             {
                 return BadRequest();
