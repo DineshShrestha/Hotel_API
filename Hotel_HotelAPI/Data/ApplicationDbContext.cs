@@ -10,6 +10,7 @@ namespace Hotel_HotelAPI.Data
         }
   
         public DbSet<Hotel> Hotels { get; set; }
+        public DbSet<HotelNumber> HotelNumbers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.Entity<Hotel>().HasData(

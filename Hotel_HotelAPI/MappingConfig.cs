@@ -13,6 +13,11 @@ namespace Hotel_HotelAPI
 
             CreateMap<Hotel, HotelCreateDTO>().ReverseMap();
             CreateMap<Hotel, HotelUpdateDTO>().ReverseMap();
+
+            CreateMap<HotelNumber, HotelNumberDTO>().ReverseMap();
+
+            CreateMap<HotelNumber, HotelNumberCreateDTO>().ReverseMap();
+            CreateMap<HotelNumber, HotelNumberUpdateDTO>().ReverseMap();
         }
         
     }

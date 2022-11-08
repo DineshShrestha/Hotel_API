@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Hotel_HotelAPI.Models.Dto
 {
-    public class HotelNumberDTO
+    public class HotelNumberCreateDTO
     {
         [Required]
         public int HotelNo { get; set; }
