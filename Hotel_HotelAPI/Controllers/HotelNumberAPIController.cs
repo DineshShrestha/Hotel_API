@@ -16,15 +16,16 @@ namespace Hotel_HotelAPI.Controllers
     public class HotelNumberAPIController : ControllerBase
     {
 
-        private readonly IHotelNumberRepository _dbHotelNumber;
         protected APIResponse _response;
-
+        private readonly IHotelNumberRepository _dbHotelNumber;
+        private readonly IHotelRepository _dbHotel;
         private readonly IMapper _mapper;
-        public HotelNumberAPIController(IHotelNumberRepository dbHotelNumber, IMapper mapper)
+        public HotelNumberAPIController(IHotelNumberRepository dbHotelNumber, IMapper mapper, IHotelRepository dbHotel)
         {
             _dbHotelNumber = dbHotelNumber;
             _mapper = mapper;
             this._response = new();
+            _dbHotel = dbHotel;
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -94,6 +95,11 @@ namespace Hotel_HotelAPI.Controllers
                     ModelState.AddModelError("CustomError", "Villa Number already exists!");
                     return BadRequest(ModelState);
                 }
+                if(await _dbHotel.GetAsync(u=>u.Id == createDTO.HotelID)== null)
+                {
+                    ModelState.AddModelError("CustomError", "Villa Number already exists!");
+                    return BadRequest(ModelState);
+                }
                 if (createDTO == null)
                 {
                     return BadRequest(createDTO);
@@ -159,6 +165,11 @@ namespace Hotel_HotelAPI.Controllers
                 if (updateDTO == null || id != updateDTO.HotelNo)
                 {
                     return BadRequest();
+                }
+                if (await _dbHotel.GetAsync(u => u.Id == updateDTO.HotelID) == null)
+                {
+                    ModelState.AddModelError("CustomError", "Villa Number already exists!");
+                    return BadRequest(ModelState);
                 }
                 HotelNumber model = _mapper.Map<HotelNumber>(updateDTO);
                 await _dbHotelNumber.UpdateAsync(model);
